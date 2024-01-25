@@ -94,10 +94,10 @@ class CustomDataset(Dataset):
         self.pairs = pairs
         self.voc = voc
         self.min_count = min_count
+        self.device = device
         self.X, self.y = self.get_data()
         self.n_samples = self.X.shape[0]
-        self.device = device
-    
+        
     def get_data(self):
         X_total = []
         y_total = []
