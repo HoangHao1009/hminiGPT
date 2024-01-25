@@ -10,14 +10,13 @@ PAD_token = 0
 UNK_token = 1
 
 class DataCreator:
-    def __init__(self, file_path, block_size, tokenizer):
-        self.file_path = file_path
+    def __init__(self, block_size, tokenizer):
         self.block_size = block_size
         self.tokenizer = tokenizer
         self.pairs = []
-    def extractPairs(self, n_pairs):
+    def extractPairs(self, file_path, n_pairs):
         pairs = []
-        with open(self.file_path, 'rb') as f:
+        with open(file_path, 'rb') as f:
             with mmap.mmap(f.fileno(), 0, access = mmap.ACCESS_READ) as mm:
                 file_size = len(mm)
                 for _ in tqdm(range(n_pairs), desc = 'Processing items', unit = 'item'):
@@ -46,6 +45,7 @@ class DataCreator:
                 input = ast.literal_eval(row[0])
                 target = ast.literal_eval(row[1])
                 results.append([input, target])
+        self.pairs = results
 
 class Vocabulary:
     def __init__(self):
