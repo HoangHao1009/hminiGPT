@@ -6,6 +6,6 @@ setup(
     author = 'Ha Hoang Hao',
     packages = ['hGPT'],
     description = 'A mini GPT to pre-train by your given text',
-    install_requires = ['torch', 'csv', 'random', 'mmap', 'tqdm', 'sklearn', 'numpy'],
+    install_requires = ['torch'],
     
 )
