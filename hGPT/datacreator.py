@@ -4,6 +4,7 @@ import mmap
 import csv
 from tqdm import tqdm
 from torch.utils.data import Dataset
+import ast
 
 PAD_token = 0
 UNK_token = 1
@@ -36,6 +37,15 @@ class DataCreator:
             writer = csv.writer(outputfile, delimiter = delimiter, lineterminator = '\n')
             for pair in self.pairs:
                 writer.writerow(pair)
+
+    def csvread(self, file_path, delimiter):
+        with open(file_path, 'r') as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter = delimiter, lineterminator = '\n')
+            results = []
+            for row in csv_reader:
+                input = ast.literal_eval(row[0])
+                target = ast.literal_eval(row[1])
+                results.append([input, target])
 
 class Vocabulary:
     def __init__(self):
@@ -111,7 +121,8 @@ class CustomDataset(Dataset):
             y_total.append(target)
         X_final = torch.tensor(X_total)
         y_final = torch.tensor(y_total)
-        X_final, y_final = X_final.to(self.device), y_final.to(self.device)
+        X_final = X_final.to(self.device)
+        y_final = y_final.to(self.device)
         return X_final, y_final
     
     def __getitem__(self, index):
