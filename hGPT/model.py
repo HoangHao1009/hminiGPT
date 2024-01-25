@@ -141,7 +141,7 @@ class WordVector:
         word_index = [word for word in self.vocab.word2index.keys()]
         word_vector = {}
         for word in word_index:
-            idx = torch.tensor(self.vocab.word2index[word].to(device))
+            idx = torch.tensor(self.vocab.word2index[word]).to(device)
             word_vector[word] = model.token_embedding(idx)
         for word, vector in word_vector.items():
             word_vector[word] = vector.to('cpu').detach().numpy()
