@@ -89,13 +89,14 @@ class Vocabulary:
         return self.num_words
 
 class CustomDataset(Dataset):
-    def __init__(self, pairs, voc, min_count):
+    def __init__(self, pairs, voc, min_count, device):
         super().__init__()
         self.pairs = pairs
         self.voc = voc
         self.min_count = min_count
         self.X, self.y = self.get_data()
         self.n_samples = self.X.shape[0]
+        self.device = device
     
     def get_data(self):
         X_total = []
@@ -110,6 +111,7 @@ class CustomDataset(Dataset):
             y_total.append(target)
         X_final = torch.tensor(X_total)
         y_final = torch.tensor(y_total)
+        X_final, y_final = X_final.to(self.device), y_final.to(self.device)
         return X_final, y_final
     
     def __getitem__(self, index):
