@@ -148,7 +148,7 @@ class WordVector:
         self.word_vector = word_vector
 
         word_vectors_array = np.array(list(word_vector.values()))
-        self.word_indices = {w: i for i, w in enumerate(word_vector.keys)}
+        self.word_indices = {w: i for i, w in enumerate(word_vector.keys())}
         self.cosine_similarity_matrix = cosine_similarity(word_vectors_array)
     
     def similarity(self, w1, w2):
