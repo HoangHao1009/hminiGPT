@@ -114,7 +114,8 @@ class CustomDataset(Dataset):
         for input, target in self.pairs:
             self.voc.addSent(input)
             self.voc.addSent(target)
-            self.voc.trim(self.min_count)
+        self.voc.trim(self.min_count)
+        for input, target in self.pairs: 
             input = self.voc.encode(input)
             target = self.voc.encode(target)
             X_total.append(target)
