@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-import tqdm
+from tqdm import tqdm
 
 class HeadAttention(nn.Module):
     def __init__(self, n_emb, head_size, block_size, dropout):
