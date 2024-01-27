@@ -5,6 +5,7 @@ import csv
 from tqdm import tqdm
 from torch.utils.data import Dataset
 import ast
+import concurrent.futures
 
 PAD_token = 0
 UNK_token = 1
@@ -14,23 +15,37 @@ class DataCreator:
         self.block_size = block_size
         self.tokenizer = tokenizer
         self.pairs = []
-    def extractPairs(self, file_path, n_pairs):
+
+    def process_chunk(self, mm, file_size):
+        i = random.randint(0, file_size - self.block_size * 10)
+        chunk = mm[i:i + self.block_size * 15].decode('utf-8', errors = 'ignore').replace('\r', '').lower()
+        sent = self.tokenizer(chunk)
+        sent = [str(x) for x in sent]
+        sent = [i for i in sent if i != ' ' and i != None]
+        start_pos = random.randint(0, len(sent) - self.block_size - 1)
+        input_seq = sent[start_pos: start_pos + self.block_size]
+        target_seq = sent[start_pos + 1: start_pos + self.block_size + 1]
+        return [input_seq, target_seq]
+
+
+    def extractPairs(self, file_path, n_pairs, num_threads = 2):
         pairs = []
         with open(file_path, 'rb') as f:
             with mmap.mmap(f.fileno(), 0, access = mmap.ACCESS_READ) as mm:
                 file_size = len(mm)
-                for _ in tqdm(range(n_pairs), desc = 'Processing items', unit = 'item'):
-                    i = random.randint(0, file_size - self.block_size * 10)
-                    chunk = mm[i:i + self.block_size * 15].decode('utf-8', errors = 'ignore').replace('\r', '').lower()
-                    sent = self.tokenizer(chunk)
-                    sent = [str(x) for x in sent]
-                    sent = [i for i in sent if i != ' ' and i != None]
-                    start_pos = random.randint(0, len(sent) - self.block_size - 1)
-                    input = sent[start_pos: start_pos + self.block_size]
-                    target = sent[start_pos + 1: start_pos + self.block_size + 1]
-                    
-                    pairs.append([input, target])
+                chunk_size = n_pairs // num_threads
+                def process_chunk_range(start, end):
+                    return [self.process_chunk(mm, file_size) for _ in tqdm(range(start, end), 
+                                                                            desc = 'Processing items', 
+                                                                            unit = 'item')]
+                with concurrent.futures.ThreadPoolExecutor(max_workers = num_threads) as executor:
+                    futures = [executor.submit(process_chunk_range, i, i + chunk_size) for i in range(0, n_pairs, chunk_size)]
+
+                    for future in concurrent.futures.as_completed(futures):
+                        pairs.append(future.result())
+
         self.pairs = pairs
+
     def csvwrite(self, file_path, delimiter):
         with open(file_path, 'w', encoding = 'utf-8') as outputfile:
             writer = csv.writer(outputfile, delimiter = delimiter, lineterminator = '\n')
