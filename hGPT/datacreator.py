@@ -5,10 +5,6 @@ import csv
 from tqdm import tqdm
 from torch.utils.data import Dataset
 import ast
-import concurrent.futures
-from multiprocessing import Manager, Pool, Value
-from functools import partial
-
 
 PAD_token = 0
 UNK_token = 1
@@ -18,34 +14,23 @@ class DataCreator:
         self.block_size = block_size
         self.tokenizer = tokenizer
         self.pairs = []
-
-    def process_chunk(self, mm, file_size, progress_counter, index):
-        i = random.randint(0, file_size - self.block_size * 10)
-        chunk = mm[i:i + self.block_size * 15].decode('utf-8', errors='ignore').replace('\r', '').lower()
-        sent = self.tokenizer(chunk)
-        sent = [str(x) for x in sent]
-        sent = [i for i in sent if i != ' ' and i is not None]
-        start_pos = random.randint(0, len(sent) - self.block_size - 1)
-        input_seq = sent[start_pos: start_pos + self.block_size]
-        target_seq = sent[start_pos + 1: start_pos + self.block_size + 1]
-        with progress_counter.get_lock():
-            progress_counter.value += 1
-        return [input_seq, target_seq]
-
-    def extractPairs(self, file_path, n_pairs, num_processes=2):
+    def extractPairs(self, file_path, n_pairs):
         pairs = []
         with open(file_path, 'rb') as f:
-            with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mm:
+            with mmap.mmap(f.fileno(), 0, access = mmap.ACCESS_READ) as mm:
                 file_size = len(mm)
-                progress_counter = Value('i', 0)
-                with tqdm(total=n_pairs, desc='Processing items', unit='item', position=0, leave=True) as progress_bar:
-                    progress_chunk_partial = partial(self.process_chunk, mm, file_size, progress_counter)
-                    with Pool(num_processes) as pool:
-                        pairs = pool.map(progress_chunk_partial, range(n_pairs))
-
+                for _ in tqdm(range(n_pairs), desc = 'Processing items', unit = 'item'):
+                    i = random.randint(0, file_size - self.block_size * 10)
+                    chunk = mm[i:i + self.block_size * 15].decode('utf-8', errors = 'ignore').replace('\r', '').lower()
+                    sent = self.tokenizer(chunk)
+                    sent = [str(x) for x in sent]
+                    sent = [i for i in sent if i != ' ' and i != None]
+                    start_pos = random.randint(0, len(sent) - self.block_size - 1)
+                    input = sent[start_pos: start_pos + self.block_size]
+                    target = sent[start_pos + 1: start_pos + self.block_size + 1]
+                    
+                    pairs.append([input, target])
         self.pairs = pairs
-
-
     def csvwrite(self, file_path, delimiter):
         with open(file_path, 'w', encoding = 'utf-8') as outputfile:
             writer = csv.writer(outputfile, delimiter = delimiter, lineterminator = '\n')
