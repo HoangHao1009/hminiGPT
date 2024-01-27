@@ -41,7 +41,7 @@ class DataCreator:
         with open(file_path, 'r') as csv_file:
             csv_reader = csv.reader(csv_file, delimiter = delimiter, lineterminator = '\n')
             results = []
-            for row in csv_reader:
+            for row in tqdm(csv_reader, desc = 'Reading CSV', unit = 'rows'):
                 input = ast.literal_eval(row[0])
                 target = ast.literal_eval(row[1])
                 results.append([input, target])
