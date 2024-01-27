@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+import tqdm
 
 class HeadAttention(nn.Module):
     def __init__(self, n_emb, head_size, block_size, dropout):
@@ -140,7 +141,7 @@ class WordVector:
         self.model = model
         word_index = [word for word in self.vocab.word2index.keys()]
         word_vector = {}
-        for word in word_index:
+        for word in tqdm(word_index, desc = 'Computing Word Vectos', unit = 'word'):
             idx = torch.tensor(self.vocab.word2index[word]).to(device)
             word_vector[word] = model.token_embedding(idx)
         for word, vector in word_vector.items():
