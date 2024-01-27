@@ -42,7 +42,7 @@ class DataCreator:
                     futures = [executor.submit(process_chunk_range, i, i + chunk_size) for i in range(0, n_pairs, chunk_size)]
 
                     for future in concurrent.futures.as_completed(futures):
-                        pairs.append(future.result())
+                        pairs.extend(future.result())
 
         self.pairs = pairs
 
