@@ -102,11 +102,12 @@ class Vocabulary:
         return self.vocab_size
 
 class CustomDataset(Dataset):
-    def __init__(self, pairs, voc, min_count, device):
+    def __init__(self, pairs, voc, device, min_count = 1, type = 'train'):
         super().__init__()
         self.pairs = pairs
         self.voc = voc
         self.min_count = min_count
+        self.type = type
         self.device = device
         self.X, self.y = self.get_data()
         self.n_samples = self.X.shape[0]
@@ -114,10 +115,11 @@ class CustomDataset(Dataset):
     def get_data(self):
         X_total = []
         y_total = []
-        for input, target in self.pairs:
-            self.voc.addSent(input)
-            self.voc.addSent(target)
-        self.voc.trim(self.min_count)
+        if self.type == 'train':
+            for input, target in self.pairs:
+                self.voc.addSent(input)
+                self.voc.addSent(target)
+            self.voc.trim(self.min_count)
         for input, target in self.pairs: 
             input = self.voc.encode(input)
             target = self.voc.encode(target)
