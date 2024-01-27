@@ -6,6 +6,9 @@ from tqdm import tqdm
 from torch.utils.data import Dataset
 import ast
 import concurrent.futures
+from multiprocessing import Manager, Pool
+from functools import partial
+
 
 PAD_token = 0
 UNK_token = 1
@@ -16,7 +19,7 @@ class DataCreator:
         self.tokenizer = tokenizer
         self.pairs = []
 
-    def process_chunk(self, mm, file_size):
+    def process_chunk(self, mm, file_size, progress_bar):
         i = random.randint(0, file_size - self.block_size * 10)
         chunk = mm[i:i + self.block_size * 15].decode('utf-8', errors = 'ignore').replace('\r', '').lower()
         sent = self.tokenizer(chunk)
@@ -25,24 +28,25 @@ class DataCreator:
         start_pos = random.randint(0, len(sent) - self.block_size - 1)
         input_seq = sent[start_pos: start_pos + self.block_size]
         target_seq = sent[start_pos + 1: start_pos + self.block_size + 1]
+        progress_bar.update(1)
         return [input_seq, target_seq]
 
 
-    def extractPairs(self, file_path, n_pairs, num_threads = 2):
+    def extractPairs(self, file_path, n_pairs, num_processes = 2):
         pairs = []
         with open(file_path, 'rb') as f:
             with mmap.mmap(f.fileno(), 0, access = mmap.ACCESS_READ) as mm:
                 file_size = len(mm)
-                chunk_size = n_pairs // num_threads
-                def process_chunk_range(start, end):
-                    return [self.process_chunk(mm, file_size) for _ in tqdm(range(start, end), 
-                                                                            desc = 'Processing items', 
-                                                                            unit = 'item')]
-                with concurrent.futures.ThreadPoolExecutor(max_workers = num_threads) as executor:
-                    futures = [executor.submit(process_chunk_range, i, i + chunk_size) for i in range(0, n_pairs, chunk_size)]
+                progress_bar = tqdm(total = n_pairs, desc = 'Processing items', 
+                                    unit = 'item', position = 0, leave = True)
+                with Manager() as manager:
+                    progress_bar = manager.Lock()
+                    progress_chunk_partial = partial(self.process_chunk, mm, file_size, progress_bar)
 
-                    for future in concurrent.futures.as_completed(futures):
-                        pairs.extend(future.result())
+                    with Pool(num_processes) as pool:
+                        pairs = pool.map(progress_chunk_partial, range(n_pairs))
+
+                progress_bar.close()
 
         self.pairs = pairs
 
