@@ -205,10 +205,10 @@ class WordVector:
                     w_cs[w] = cs
             if type == 'simi':
                 sort_w_cs = sorted(w_cs.items(), key = lambda i: i[1], reverse = True)
-                results = sort_w_cs[top_n]
+                results = sort_w_cs[:top_n]
             elif type == 'differ':
                 sort_w_cs = sorted(w_cs.items(), key = lambda i: i[1])
-                results = sort_w_cs[top_n]
+                results = sort_w_cs[:top_n]
         except:
             print('Type is "simi" or "differ')
         return results
