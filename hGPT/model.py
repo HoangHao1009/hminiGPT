@@ -191,12 +191,18 @@ class WordVector:
             word_vector[word] = model.token_embedding(idx)
         self.word_vector = word_vector
 
-    def get_simi(self):
+    def get_simi(self, batch_size):
         for word, vector in self.word_vector.items():
             self.word_vector[word] = vector.to('cpu').detach().numpy()
         word_vectors_array = np.array(list(self.word_vector.values()))
         self.word_indices = {w: i for i, w in enumerate(self.word_vector.keys())}
-        self.cosine_similarity_matrix = cosine_similarity(word_vectors_array)
+        for i in range(0, len(word_vectors_array), batch_size):
+            batch_vectors = word_vectors_array[i:i + batch_size]
+            batch_similarity = cosine_similarity(batch_vectors)
+            if i == 0:
+                self.cosine_similarity_matrix = batch_similarity
+            else:
+                self.cosine_similarity_matrix = np.concatenate((self.cosine_similarity_matrix, batch_similarity), axis=0)
     
     def similarity(self, w1, w2):
         simi = self.cosine_similarity_matrix[self.word_indices[w1], self.word_indices[w2]]
