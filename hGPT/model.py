@@ -193,10 +193,10 @@ class WordVector:
 
     def get_simi(self, batch_size):
         for word, vector in self.word_vector.items():
-            self.word_vector[word] = vector.to('cpu').detach().numpy()
+            self.word_vector[word] = vector.astype(np.float32)
         word_vectors_array = np.array(list(self.word_vector.values()))
         self.word_indices = {w: i for i, w in enumerate(self.word_vector.keys())}
-        for i in range(0, len(word_vectors_array), batch_size):
+        for i in tqdm(range(0, len(word_vectors_array), batch_size), desc = 'Processing Units', item = 'unit'):
             batch_vectors = word_vectors_array[i:i + batch_size]
             batch_similarity = cosine_similarity(batch_vectors)
             if i == 0:
