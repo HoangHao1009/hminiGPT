@@ -135,40 +135,6 @@ class MiniGPT(nn.Module):
         #index: (max_new_token, )
         return index
     
-class WordVector:
-    def __init__(self, vocab, model, device):
-        self.vocab = vocab
-        self.model = model
-        word_index = [word for word in self.vocab.word2index.keys()]
-        word_vector = {}
-        for word in tqdm(word_index, desc = 'Computing Word Vectos', unit = 'word'):
-            idx = torch.tensor(self.vocab.word2index[word]).to(device)
-            word_vector[word] = model.token_embedding(idx)
-        for word, vector in word_vector.items():
-            word_vector[word] = vector.to('cpu').detach().numpy()
-        self.word_vector = word_vector
-
-        word_vectors_array = np.array(list(word_vector.values()))
-        self.word_indices = {w: i for i, w in enumerate(word_vector.keys())}
-        self.cosine_similarity_matrix = cosine_similarity(word_vectors_array)
-    
-    def similarity(self, w1, w2):
-        simi = self.cosine_similarity_matrix[self.word_indices[w1], self.word_indices[w2]]
-        return simi
-    
-    def most_similarity(self, word, type = 'simi', top_n = 5):
-        try:
-            if type == 'simi':
-                word_indices_sorted = np.argsort(self.cosine_similarity_matrix[self.word_indices[word]])[::-1]
-            elif type == 'differ':
-                word_indices_sorted = np.argsort(self.cosine_similarity_matrix[self.word_indices[word]])
-            top_word = [word for word, idx in self.word_indices.items() if idx in word_indices_sorted[:top_n]]
-            simi = [self.similarity(w, word) for w in top_word]
-            result = zip(top_word, simi)
-        except:
-            print('Type is "simi" or "differ')
-        return result
-    
 class Trainer(nn.Module):
     def __init__(self, train_dataloader, val_dataloader, model, optimizer, eval_iters):
         super().__init__()
@@ -213,3 +179,38 @@ class Trainer(nn.Module):
             'opt': self.optimizer.state_dict(),
             'voc': voc.__dict__
         }, file_path)
+
+class WordVector:
+    def __init__(self, vocab, model, device):
+        self.vocab = vocab
+        self.model = model
+        word_index = [word for word in self.vocab.word2index.keys()]
+        word_vector = {}
+        for word in tqdm(word_index, desc = 'Computing Word Vectos', unit = 'word'):
+            idx = torch.tensor(self.vocab.word2index[word]).to(device)
+            word_vector[word] = model.token_embedding(idx)
+        self.word_vector = word_vector
+
+    def get_simi(self):
+        for word, vector in self.word_vector.items():
+            self.word_vector[word] = vector.to('cpu').detach().numpy()
+        word_vectors_array = np.array(list(self.word_vector.values()))
+        self.word_indices = {w: i for i, w in enumerate(self.word_vector.keys())}
+        self.cosine_similarity_matrix = cosine_similarity(word_vectors_array)
+    
+    def similarity(self, w1, w2):
+        simi = self.cosine_similarity_matrix[self.word_indices[w1], self.word_indices[w2]]
+        return simi
+    
+    def most_similarity(self, word, type = 'simi', top_n = 5):
+        try:
+            if type == 'simi':
+                word_indices_sorted = np.argsort(self.cosine_similarity_matrix[self.word_indices[word]])[::-1]
+            elif type == 'differ':
+                word_indices_sorted = np.argsort(self.cosine_similarity_matrix[self.word_indices[word]])
+            top_word = [word for word, idx in self.word_indices.items() if idx in word_indices_sorted[:top_n + 1]]
+            simi = [self.similarity(w, word) for w in top_word]
+            result = [[i, k] for i, k in zip(top_word, simi) if i != word]
+        except:
+            print('Type is "simi" or "differ')
+        return result
