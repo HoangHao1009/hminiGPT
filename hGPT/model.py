@@ -192,36 +192,23 @@ class WordVector:
         self.word_vector = word_vector
         for word, vector in self.word_vector.items():
             self.word_vector[word] = vector.cpu().detach().numpy()
-        self.word_vectors_array = np.array(list(self.word_vector.values()))
-        self.word_indices = {w: i for i, w in enumerate(self.word_vector.keys())}
-
-    def get_simi(self):
-      total_len = len(self.word_vectors_array)
-      for i in range(100, total_len):
-        if total_len % i == 0:
-          batch_size = i
-          break
-      for i in tqdm(range(0, len(self.word_vectors_array), batch_size), desc = 'Processing items', unit = 'item'):
-          batch_vectors = self.word_vectors_array[i:i + batch_size]
-          batch_similarity = cosine_similarity(batch_vectors)
-          if i == 0:
-            self.cosine_similarity_matrix = batch_similarity
-          else:
-            self.cosine_similarity_matrix = np.concatenate((self.cosine_similarity_matrix, batch_similarity), axis=0)
 
     def similarity(self, w1, w2):
-        simi = self.cosine_similarity_matrix[self.word_indices[w1], self.word_indices[w2]]
-        return simi
+        return cosine_similarity([self.word_vector[w1]], [self.word_vector[w2]])[0][0]
     
     def most_similarity(self, word, type = 'simi', top_n = 5):
         try:
+            w_cs = {}
+            for w, v in self.word_vector.items():
+                if w != word:
+                    cs = cosine_similarity([v],[self.word_vector[word]])[0][0]
+                    w_cs[w] = cs
             if type == 'simi':
-                word_indices_sorted = np.argsort(self.cosine_similarity_matrix[self.word_indices[word]])[::-1]
+                sort_w_cs = sorted(w_cs.items(), key = lambda i: i[1], reverse = True)
+                results = sort_w_cs[top_n]
             elif type == 'differ':
-                word_indices_sorted = np.argsort(self.cosine_similarity_matrix[self.word_indices[word]])
-            top_word = [word for word, idx in self.word_indices.items() if idx in word_indices_sorted[:top_n + 1]]
-            simi = [self.similarity(w, word) for w in top_word]
-            result = [[i, k] for i, k in zip(top_word, simi) if i != word]
+                sort_w_cs = sorted(w_cs.items(), key = lambda i: i[1])
+                results = sort_w_cs[top_n]
         except:
             print('Type is "simi" or "differ')
-        return result
+        return results
