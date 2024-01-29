@@ -18,11 +18,11 @@ if you want to use sample data:
 [train csv](https://drive.google.com/file/d/1_jyCVu0gj0o3b-zAnnFVcbUODAAlQ3QZ/view?usp=sharing), [test csv](https://drive.google.com/file/d/1a1-cvXd-c01Su7bOIO2fz2Uk14bdSYOk/view?usp=drive_link), [model](https://drive.google.com/file/d/1-4KngqSBr3Ow3k43HETZlGb6DHkNoO5p/view?usp=drive_link)
 
 
-### Module:
+## Module:
 - datacreator: for prepare/ handle data for modelling.
 - model: GPT model architecture, training model and calculate word vector
 
-### Library installation
+## Library installation
 Run this code to install before you import `hGPT`:
 ```python
 git clone https://github.com/HoangHao1009/hminiGPT
@@ -30,7 +30,7 @@ cd hminiGPT
 pip install -e .
 ```
 
-# Usage
+## Usage
 import module
 ```python
 from hGPT.datacreator import DataCreator, Vocabulary, CustomDataset
@@ -53,7 +53,7 @@ eval_iters = 100
 ```
 
 You should read demo file for better understanding
-#### 1. Create Data 
+### 1. Create Data 
 
 (note that hGPT use spacy-tokenizer for convenient, you can custom it with the code in: `datacreator.DataCreator`):
 
@@ -77,7 +77,7 @@ train_data.csvread('trainGPTdata.csv', ',')
 val_data.csvread('valGPTdata.csv', ',')
 ```
 
-#### 2. Create DataLoader
+### 2. Create DataLoader
 ```python
 voc = Vocabulary()
 train_dataset = CustomDataset(train_data.pairs, voc, device, min_count = 5, type = 'train')
@@ -86,13 +86,13 @@ train_dataloader = DataLoader(train_dataset, batch_size, shuffle = True)
 val_dataloader = DataLoader(val_dataset, batch_size, shuffle = True)
 ```
 
-#### 3. Initial Model
+### 3. Initial Model
 ```python
 model = MiniGPT(voc.num_words, n_emb, block_size, num_head, n_layer, dropout, device)
 m = model.to(device)
 ```
 
-#### 4. Training
+### 4. Training
 ```python
 train_iters = 1000
 optimizer = torch.optim.AdamW(model.parameters(), lr = learning_rate)
@@ -100,7 +100,7 @@ trainer = Trainer(train_dataloader, val_dataloader, model, optimizer, eval_iters
 trainer.start_training(train_iters)
 ```
 
-#### 5. Save model
+### 5. Save model
 ```python
 save_model_path = 'saveGPTmodel10000.pt'
 trainer.start_training(5000)
@@ -110,14 +110,14 @@ trainer.save_model(
 )
 ```
 
-#### 7. If you want to use Pre-train Data
+### 7. If you want to use Pre-train Data
 ```python
 save_model_path = 'saveGPTmodel10000.pt'
 checkpoint = torch.load(save_model_path, map_location = torch.device('cpu'))
 print(checkpoint.keys())
 ```
 
-#### 8. Calculate similarity based on your trained model
+### 8. Calculate similarity based on your trained model
 ```python
 if using Pre-train:
 #voc = Vocabulary()
@@ -136,12 +136,12 @@ wv.most_similarity(word1)
 wv.similarity(word2, word3)
 ```
 
-### Warning
+## Warning
 
 - This project is built for you to training your own model based on your text. So if your given is too small or it don't give comprehensive word context, a result's might not be good.
 - My guild for this project is just pre-train phrase, that is the project's aim is focus to take word's vector for a given text. If you want to make a chatbot, there'll requires more fine-tuning phrase.
 
-### References
+## References
 - [Dive into Deeplearning](https://d2l.aivivn.com/): I learn a lot from this amazing book for a architecture for NLP model and how to train it.
 - [Neural Networks: Zero to Hero](https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ): Youtube Series of Andrej Karpathy for understand how GPT works.
 - [All you need is Attention](https://arxiv.org/abs/1706.03762): For foundational understanding of Transformer
