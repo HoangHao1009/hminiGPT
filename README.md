@@ -14,6 +14,10 @@ wv.most_similarity('thông minh')
 #('hồng hào', 0.23076029),
 #('đẹp trai', 0.23039979)]
 ```
+if you want to use sample data:
+[train csv](https://drive.google.com/file/d/1_jyCVu0gj0o3b-zAnnFVcbUODAAlQ3QZ/view?usp=sharing), [test csv](https://drive.google.com/file/d/1a1-cvXd-c01Su7bOIO2fz2Uk14bdSYOk/view?usp=drive_link), [model](https://drive.google.com/file/d/1-4KngqSBr3Ow3k43HETZlGb6DHkNoO5p/view?usp=drive_link)
+
+
 ### Module:
 - datacreator: for prepare/ handle data for modelling.
 - model: GPT model architecture, training model and calculate word vector
