@@ -54,6 +54,7 @@ class Vocabulary:
         self.word2count = {}
         self.index2word = {PAD_token: 'PAD', UNK_token: 'UNK'}
         self.num_words = 2
+        self.vocab_size = self.num_words
 
     def addSent(self, sentence):
         for word in sentence:
@@ -89,16 +90,16 @@ class Vocabulary:
         for word in keep_words:
             self.addWord(word)
 
-        self.num_words = len(self)
+        self.vocab_size = len(self)
 
     def encode(self, li):
         return [self.word2index.get(word, 1) for word in li]
     
     def decode(self, li):
-        return [self.index2word[i] for i in li]
+        return ' '.join([self.index2word[i] for i in li])
     
     def __len__(self):
-        return self.num_words
+        return self.vocab_size
 
 class CustomDataset(Dataset):
     def __init__(self, pairs, voc, device, min_count = 1, type = 'train'):
@@ -122,7 +123,7 @@ class CustomDataset(Dataset):
         for input, target in self.pairs: 
             input = self.voc.encode(input)
             target = self.voc.encode(target)
-            X_total.append(target)
+            X_total.append(input)
             y_total.append(target)
         X_final = torch.tensor(X_total)
         y_final = torch.tensor(y_total)
