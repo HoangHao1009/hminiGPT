@@ -60,17 +60,17 @@ train_data = DataCreator(block_size, tokenizer)
 val_data = DataCreator(block_size, tokenizer)
 ```
 ```python
-train_file_path = '/content/drive/Othercomputers/My Laptop/Personal/hminiGPT/10000book_train.txt'
-val_file_path = '/content/drive/Othercomputers/My Laptop/Personal/hminiGPT/10000book_val.txt'
+train_file_path = 'your_train.txt'
+val_file_path = 'your_val.txt'
 train_data.extractPairs(train_file_path, 50000)
 val_data.extractPairs(val_file_path, 5000)
-train_data.csvwrite('/content/drive/Othercomputers/My Laptop/Personal/hminiGPT/trainGPTdata.csv', ',')
-val_data.csvwrite('/content/drive/Othercomputers/My Laptop/Personal/hminiGPT/valGPTdata.csv', ',')
+train_data.csvwrite('trainGPTdata.csv', ',')
+val_data.csvwrite('valGPTdata.csv', ',')
 ```
 if data is exist
 ```python
-train_data.csvread('/content/drive/Othercomputers/My Laptop/Personal/hminiGPT/10000book/trainGPTdata.csv', ',')
-val_data.csvread('/content/drive/Othercomputers/My Laptop/Personal/hminiGPT/10000book/valGPTdata.csv', ',')
+train_data.csvread('trainGPTdata.csv', ',')
+val_data.csvread('valGPTdata.csv', ',')
 ```
 
 #### 2. Create DataLoader
