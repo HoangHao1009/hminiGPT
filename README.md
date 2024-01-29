@@ -126,6 +126,11 @@ if using Pre-train:
 #model.load_state_dict(checkpoint['model'])
 
 wv = WordVector(voc, model, device)
+#if you want to take word vector
+word = ''
+word_vector = WordVecor.word_vector[word]
+
+#calculate similarity
 word1, word2, word3 = '', '', ''
 wv.most_similarity(word1)
 wv.similarity(word2, word3)
