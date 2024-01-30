@@ -10,7 +10,7 @@ PAD_token = 0
 UNK_token = 1
 
 class DataCreator:
-    def __init__(self, block_size, tokenizer = None):
+    def __init__(self, block_size = None, tokenizer = None):
         self.block_size = block_size
         self.tokenizer = tokenizer
         self.pairs = []
